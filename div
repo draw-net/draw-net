@@ -10,10 +10,6 @@
     <div id="photo-gallery">
 <?php
 // modulo.php (conexão com o banco de dados)
-$servidor = "sousato.mysql.dbaas.com.br";
-$usuario = "sousato";
-$senha = "Armando@242281";
-$dbname = "sousato";
 
 try {
     $conn = new PDO("mysql:host=$servidor;dbname=$dbname", $usuario, $senha);
