@@ -1,0 +1,119 @@
+<div id="search-container">
+        <form method="get" action="">
+            <div class="search-box">
+                <input type="text" id="search-input" name="search" placeholder="busca de projeto">
+                <button id="search-button" type="submit">pesquisar</button>
+            </div>
+        </form>
+    </div>
+
+    <div id="photo-gallery">
+<?php
+// modulo.php (conexão com o banco de dados)
+$servidor = "sousato.mysql.dbaas.com.br";
+$usuario = "sousato";
+$senha = "Armando@242281";
+$dbname = "sousato";
+
+try {
+    $conn = new PDO("mysql:host=$servidor;dbname=$dbname", $usuario, $senha);
+    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    //echo "Conexão bem sucedida!";
+} catch (PDOException $e) {
+    echo "Erro de conexão: " . $e->getMessage();
+    exit; // Encerra o script se a conexão falhar
+}
+
+// Sua lógica de exibição e pesquisa
+
+if (isset($_GET['search'])) {
+    $searchTerm = $_GET['search'];
+    $searchTerm = "%" . $searchTerm . "%";
+
+   $sql = "SELECT * FROM projetos WHERE nome LIKE :searchTerm OR projeto LIKE :searchTerm OR note LIKE :searchTerm LIMIT 15";
+
+    try {
+        $stmt = $conn->prepare($sql);
+        $stmt->bindValue(':searchTerm', $searchTerm, PDO::PARAM_STR);
+        $stmt->execute();
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    } catch (PDOException $e) {
+        echo "Erro na consulta SQL: " . $e->getMessage();
+    }
+
+     if ($result) {
+        if(count($result) > 0){
+        foreach ($result as $row) {
+            try {
+                 $photoId = $row['id'];
+                $filename = $row['projeto'];
+                $imageData = $row['imagem'];
+                $nomeProjeto = $row['nome'];
+                 $nomeProjetoEscaped = htmlspecialchars($nomeProjeto, ENT_QUOTES, 'UTF-8');
+                 $note = htmlspecialchars($row['note']);
+                $dataUrl = 'data:image/jpeg;base64,' . base64_encode($imageData);
+
+                 echo '<div class="photo-container">';
+                 echo '<img src="' . $dataUrl . '" alt="' . $filename . '" onclick="openImagePopup(\'' . $dataUrl . '\')">';
+                  echo '<br>&nbsp<button class="like-button" data-photo-id="123">Curtir</button> <button class="note-button" data-note="' . $note . '" data-user="' . $nomeProjetoEscaped . '">Note</button>  <button class="comment-button" data-note="' . $note . '" data-user="' . $nomeProjetoEscaped . '">Comentários</button>';
+                   echo "<br>&nbsp <b>Arq.</b> " . $nomeProjeto . "";
+                   echo "<br>&nbsp <b>Projeto:</B> " . $filename . "";
+                 echo '</div>';
+
+            } catch (Exception $e) {
+                echo "Erro ao exibir resultado: " . $e->getMessage();
+            }
+        }
+    } else {
+       echo '<p class="no-results">Nenhum projeto encontrado na consulta aleatória.</p>';
+    }
+  }  else {
+        echo '<p class="no-results">Nenhum projeto encontrado na consulta aleatória.</p>';
+    }
+} else {
+    $sql = "SELECT * FROM projetos ORDER BY RAND() LIMIT 15";
+
+    try {
+       $stmt = $conn->query($sql);
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    } catch (PDOException $e) {
+        echo "Erro na consulta SQL: " . $e->getMessage();
+        exit;
+    }
+
+      if ($result) {
+        if (count($result) > 0) {
+            foreach ($result as $row) {
+                try {
+                     $photoId = $row['id'];
+                    $filename = $row['projeto'];
+                    $imageData = $row['imagem'];
+                    $nomeProjeto = $row['nome'];
+                     $nomeProjetoEscaped = htmlspecialchars($nomeProjeto, ENT_QUOTES, 'UTF-8');
+                    $note = htmlspecialchars($row['note']);
+                    $dataUrl = 'data:image/jpeg;base64,' . base64_encode($imageData);
+                    
+                     echo '<div class="photo-container">';
+                     echo '<img src="' . $dataUrl . '" alt="' . $filename . '" onclick="openImagePopup(\'' . $dataUrl . '\')">';
+                       echo '<br>&nbsp<button class="like-button" data-photo-id="123">Curtir</button> <button class="note-button" data-note="' . $note . '" data-user="' . $nomeProjetoEscaped . '">Note</button>  <button class="comment-button" data-note="' . $note . '" data-user="' . $nomeProjetoEscaped . '">Comentários</button>';
+                      echo "<br>&nbsp<b>  Arq. </b>" . $nomeProjeto . "";
+                      echo "<br>&nbsp<b>  Projeto: </b>" . $filename . "";
+                       echo '</div>';
+                }  catch (Exception $e) {
+                   echo "Erro ao exibir resultado: " . $e->getMessage();
+                }
+            }
+
+        } else {
+            echo '<p class="no-results">Nenhum projeto encontrado na consulta aleatória.</p>';
+        }
+    } else {
+          echo '<p class="no-results">Nenhum projeto encontrado na consulta aleatória.</p>';
+        }
+}
+
+
+?>
+    </div>
